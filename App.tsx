@@ -25,6 +25,8 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import {Client} from '@xmtp/react-native-sdk';
+
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
@@ -62,6 +64,14 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  function connectRandomWallet() {
+    return async () => {
+      // NOTE: react-native-sdk testing
+      const client = await Client.createRandom('dev');
+
+      //const rnSDKAddress = await client.address;
+    };
+  }
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
