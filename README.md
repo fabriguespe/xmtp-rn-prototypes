@@ -80,5 +80,35 @@ cd ios && pod install && cd ..
 Finally, start your React Native application:
 
 ```bash
-npm run start
+npm run ios
 ```
+
+# XMTP React Native Integration Guide - Final Update
+
+Great to hear that you've resolved the issue with a different solution. Let's update the troubleshooting section of this README to include the solution that worked for you.
+
+## Troubleshooting
+
+### Resolving the 'atob' Reference Error
+
+If you encounter the error `ReferenceError: Property 'atob' doesn't exist, js engine: hermes`, it's typically due to the absence of the `atob` function in the Hermes JavaScript engine used by React Native. This issue can be resolved by polyfilling the `atob` and `btoa` functions using the `@react-native-anywhere/polyfill-base64` package.
+
+#### Using `@react-native-anywhere/polyfill-base64`
+
+1. **Install the Package:**
+
+   To add the necessary polyfill, install `@react-native-anywhere/polyfill-base64`:
+
+   ```bash
+   npm install @react-native-anywhere/polyfill-base64
+   ```
+
+2. **Import the Polyfill:**
+
+   In the entry point of your application, such as `index.js`, import the polyfill:
+
+   ```javascript
+   import '@react-native-anywhere/polyfill-base64';
+
+   // Now you can use btoa and atob in your application
+   ```

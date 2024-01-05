@@ -1,10 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
@@ -14,6 +7,7 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
+  Button,
   View,
 } from 'react-native';
 
@@ -69,7 +63,8 @@ function App(): React.JSX.Element {
       // NOTE: react-native-sdk testing
       const client = await Client.createRandom('dev');
 
-      //const rnSDKAddress = await client.address;
+      const rnSDKAddress = await client.address;
+      console.log('rnSDKAddress', rnSDKAddress);
     };
   }
   return (
@@ -92,6 +87,13 @@ function App(): React.JSX.Element {
           </Section>
           <Section title="See Your Changes">
             <ReloadInstructions />
+          </Section>
+          <Section title="Connect Wallet">
+            <Button
+              onPress={connectRandomWallet()}
+              title="Connect Random Wallet"
+              color="#841584"
+            />
           </Section>
           <Section title="Debug">
             <DebugInstructions />
