@@ -103,3 +103,23 @@ npm run ios
 
    // Now you can use btoa and atob in your application
    ```
+
+**Resolving Buffer Issues with Ethers.js**
+
+Ethers.js relies on the Buffer class, which is a global object in Node.js but not available in the React Native environment. To resolve this, you need to polyfill Buffer.
+
+1. **Install the Buffer Package:**
+
+   If you haven't already, install the `buffer` package using npm:
+
+   ```bash
+   npm install buffer
+   ```
+
+2. **Polyfill Buffer:**
+
+   In the entry point of your application, such as `index.js`, add Buffer to the global scope:
+
+   ```jsx
+   global.Buffer = global.Buffer || require('buffer').Buffer;
+   ```
