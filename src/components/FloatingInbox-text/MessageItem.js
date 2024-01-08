@@ -8,8 +8,8 @@ export const MessageItem = ({message, senderAddress, client}) => {
         return <Text style={styles.renderedMessage}>{message?.content()}</Text>;
       }
     } catch {
-      return message?.contentFallback ? (
-        message?.contentFallback
+      return message?.fallback ? (
+        message?.fallback
       ) : (
         <Text style={styles.renderedMessage}>{message?.content()}</Text>
       );
