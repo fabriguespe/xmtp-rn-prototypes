@@ -162,7 +162,7 @@ export const ConversationContainer = ({
     );
   }
   return (
-    <View style={styles.conversations}>
+    <>
       {!selectedConversation && (
         <View style={styles.conversationList}>
           <TextInput
@@ -190,7 +190,8 @@ export const ConversationContainer = ({
               style={styles.createNewButton}
               onPress={() => {
                 setSelectedConversation({messages: []});
-              }}></Button>
+              }}
+            />
           )}
         </View>
       )}
@@ -202,6 +203,6 @@ export const ConversationContainer = ({
           selectConversation={selectConversation}
         />
       )}
-    </View>
+    </>
   );
 };

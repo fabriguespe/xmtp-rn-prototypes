@@ -2,16 +2,16 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 export const MessageItem = ({message, senderAddress, client}) => {
-  const renderMessage = message => {
+  const renderMessage = () => {
     try {
-      if (message?.content.length > 0) {
-        return <Text style={styles.renderedMessage}>{message?.content}</Text>;
+      if (message?.content().length > 0) {
+        return <Text style={styles.renderedMessage}>{message?.content()}</Text>;
       }
     } catch {
       return message?.contentFallback ? (
         message?.contentFallback
       ) : (
-        <Text style={styles.renderedMessage}>{message?.content}</Text>
+        <Text style={styles.renderedMessage}>{message?.content()}</Text>
       );
     }
   };
@@ -23,7 +23,7 @@ export const MessageItem = ({message, senderAddress, client}) => {
       style={isSender ? styles.senderMessage : styles.receiverMessage}
       key={message.id}>
       <View style={styles.messageContent}>
-        {renderMessage(message)}
+        {renderMessage()}
         <View style={styles.footer}>
           <Text style={styles.timeStamp}>
             {`${new Date(message.sent).getHours()}:${String(

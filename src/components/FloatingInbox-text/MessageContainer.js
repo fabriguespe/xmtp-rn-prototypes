@@ -1,7 +1,17 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {MessageInput} from './MessageInput';
 import {MessageItem} from './MessageItem';
-import {View, Text, Button, ScrollView, Alert} from 'react-native';
+import {View, Text, ScrollView, Alert, StyleSheet} from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  messagesContainer: {
+    flex: 1,
+  },
+});
 
 export const MessageContainer = ({
   conversation,
@@ -12,9 +22,6 @@ export const MessageContainer = ({
   const isFirstLoad = useRef(true);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPopup, setShowPopup] = useState(
-    conversation.consentState === 'unknown',
-  );
 
   const updateMessages = (prevMessages, newMessage) => {
     const doesMessageExist = prevMessages.some(
@@ -48,29 +55,6 @@ export const MessageContainer = ({
     fetchMessages();
   }, [conversation]);
 
-  // Function to handle the acceptance of a contact
-  const handleAccept = async () => {
-    // Allow the contact
-    await client.contacts.allow([conversation.peerAddress]);
-    // Hide the popup
-    setShowPopup(false);
-    // Refresh the consent list
-    await client.contacts.refreshConsentList();
-    // Log the acceptance
-    console.log('accepted', conversation.peerAddress);
-  };
-
-  // Function to handle the blocking of a contact
-  const handleBlock = async () => {
-    // Block the contact
-    await client.contacts.deny([conversation.peerAddress]);
-    // Hide the popup
-    setShowPopup(false);
-    // Refresh the consent list
-    await client.contacts.refreshConsentList();
-    // Log the blocking
-    console.log('denied', conversation.peerAddress);
-  };
   const startMessageStream = async () => {
     let stream = await conversation.streamMessages();
     for await (const message of stream) {
@@ -101,12 +85,12 @@ export const MessageContainer = ({
   };
 
   return (
-    <View style={{flex: 1}}>
+    <>
       {isLoading ? (
         <Text>Loading messages...</Text>
       ) : (
-        <>
-          <ScrollView>
+        <View style={styles.container}>
+          <ScrollView style={styles.messagesContainer}>
             {messages.slice().map(message => {
               return (
                 <MessageItem
@@ -118,23 +102,13 @@ export const MessageContainer = ({
               );
             })}
           </ScrollView>
-          {showPopup ? (
-            <View>
-              <Text>Do you trust this contact?</Text>
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                <Button title="Accept" onPress={handleAccept} color="blue" />
-                <Button title="Block" onPress={handleBlock} color="red" />
-              </View>
-            </View>
-          ) : null}
           <MessageInput
             onSendMessage={msg => {
               handleSendMessage(msg);
             }}
           />
-        </>
+        </View>
       )}
-    </View>
+    </>
   );
 };
