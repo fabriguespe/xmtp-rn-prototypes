@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Client, useXmtp} from '@xmtp/react-native-sdk';
 import {ethers} from 'ethers';
+import {Buffer} from 'buffer';
 import {ConversationContainer} from './ConversationContainer';
 import {View, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
 
@@ -108,7 +109,8 @@ export function FloatingInbox({wallet, env, onLogout}) {
       setIsOnNetwork(true);
     }
     if (signer && isOnNetwork && isConnected) {
-      initXMTP();
+      //initXMTP();
+      initXmtpWithKeys();
     }
   }, [wallet, isOnNetwork, isConnected]);
 
@@ -122,9 +124,8 @@ export function FloatingInbox({wallet, env, onLogout}) {
       try {
         await window.ethereum.enable();
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        setSigner(signer);
-        console.log('Your address', await getAddress(signer));
+        const signerXmtp = provider.getSigner();
+        setSigner(signerXmtp);
         setIsConnected(true);
       } catch (error) {
         console.error('User rejected request', error);
@@ -152,12 +153,13 @@ export function FloatingInbox({wallet, env, onLogout}) {
 
   const createNewWallet = async () => {
     try {
-      const client = await Client.createRandom('dev');
-      const rnSDKAddress = await client.address;
-      console.log('rnSDKAddress', rnSDKAddress);
+      const clientOptions = {
+        env: env ? env : getEnv(),
+      };
+      const xmtpClient = await Client.createRandom(clientOptions.env);
       setIsConnected(true);
-      setSigner(client);
-      setClient(client);
+      setSigner(xmtpClient);
+      setClient(xmtpClient);
       setIsOnNetwork(true);
     } catch (error) {
       console.error('Error creating new wallet', error);
@@ -171,7 +173,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
     setClient(null);
     setSelectedConversation(null);
     const address = await getAddress(signer);
-    console.log('wipe', address);
+    wipeKeyBundle(address);
     AsyncStorage.removeItem('isOnNetwork');
     AsyncStorage.removeItem('isConnected');
     if (typeof onLogout === 'function') {
@@ -188,8 +190,8 @@ export function FloatingInbox({wallet, env, onLogout}) {
         'mainnet',
         'b1528436726c44f0a6c739baf91e04fb',
       );
-      const signer = new ethers.Wallet(privateKey, infuraProvider);
-      setSigner(signer);
+      const signerEthers = new ethers.Wallet(privateKey, infuraProvider);
+      setSigner(signerEthers);
       setIsConnected(true);
     } catch (error) {
       console.error('Error creating new wallet', error);
@@ -202,18 +204,15 @@ export function FloatingInbox({wallet, env, onLogout}) {
         return;
       }
       let address = await getAddress(signer);
-      let keys = await loadKeys(address);
+      let keys = await loadKeyBundle(address);
       const clientOptions = {
         env: env ? env : getEnv(),
       };
-      console.log(keys, address);
       if (!keys) {
-        console.log(signer);
-        const xmtp = await Client.create(signer);
-        keys = await Client.exportKeyBundle();
-        console.log(keys);
-        storeKeys(address, keys);
+        const xmtp = await Client.create(signer, clientOptions);
         setClient(xmtp);
+        keys = await xmtp.exportKeyBundle(xmtp.address);
+        storeKeyBundle(xmtp.address, keys);
         setIsOnNetwork(!!xmtp.address);
       } else {
         const xmtp = await Client.createFromKeyBundle(keys, clientOptions);
@@ -225,24 +224,6 @@ export function FloatingInbox({wallet, env, onLogout}) {
     }
   };
 
-  const initXMTP = async function () {
-    try {
-      if (!signer) {
-        handleLogout();
-        return;
-      }
-      const clientOptions = {
-        env: env ? env : getEnv(),
-      };
-      console.log(signer);
-      const xmtp = await Client.create(signer, clientOptions);
-      console.log('pasa', clientOptions, xmtp.address);
-      setClient(xmtp);
-      setIsOnNetwork(!!xmtp.address);
-    } catch (error) {
-      console.error('Error initializing XMTP with keys', error);
-    }
-  };
   return (
     <View style={{flex: 1}}>
       <View style={styles.uContainer}>
@@ -289,7 +270,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
             <View style={styles.xmtpContainer}>
               <Button
                 title="Connect to XMTP"
-                onPress={initXMTP}
+                onPress={initXmtpWithKeys}
                 style={styles.btnXmtp}
               />
             </View>
@@ -307,30 +288,26 @@ export function FloatingInbox({wallet, env, onLogout}) {
   );
 }
 
-const ENCODING = 'binary';
-
 export const getEnv = () => {
   // "dev" | "production" | "local"
   return typeof process !== 'undefined' && process.env.REACT_APP_XMTP_ENV
     ? process.env.REACT_APP_XMTP_ENV
     : 'production';
 };
+
 export const buildLocalStorageKey = walletAddress => {
   return walletAddress ? `xmtp:${getEnv()}:keys:${walletAddress}` : '';
 };
 
-export const loadKeys = async walletAddress => {
-  const val = await AsyncStorage.getItem(buildLocalStorageKey(walletAddress));
-  return val ? Buffer.from(val, ENCODING) : null;
+export const loadKeyBundle = async address => {
+  const keyBundle = await AsyncStorage.getItem(buildLocalStorageKey(address));
+  //console.log(buildLocalStorageKey(address), keyBundle);
+  return keyBundle;
 };
-
-export const storeKeys = async (walletAddress, keys) => {
-  await AsyncStorage.setItem(
-    buildLocalStorageKey(walletAddress),
-    Buffer.from(keys).toString(ENCODING),
-  );
+export const storeKeyBundle = async (address, keyBundle) => {
+  //console.log(buildLocalStorageKey(address), keyBundle);
+  await AsyncStorage.setItem(buildLocalStorageKey(address), keyBundle);
 };
-
-export const wipeKeys = async walletAddress => {
-  await AsyncStorage.removeItem(buildLocalStorageKey(walletAddress));
+export const wipeKeyBundle = async address => {
+  await AsyncStorage.removeItem(buildLocalStorageKey(address));
 };

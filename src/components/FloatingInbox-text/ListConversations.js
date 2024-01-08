@@ -56,7 +56,7 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
 
       setLoading(false);
       client.conversations.stream(conversation => {
-        console.log('Streamed conv:', conversation);
+        console.log('Streamed conversation:', conversation);
         if (isMounted) {
           setConversations(prevConversations => {
             const newConversations = [...prevConversations, conversation];
