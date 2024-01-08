@@ -1,6 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {MessageInput} from './MessageInput';
 import {MessageItem} from './MessageItem';
+import {useXmtp} from '@xmtp/react-native-sdk';
 import {View, Text, ScrollView, Alert, StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
@@ -15,11 +16,11 @@ const styles = StyleSheet.create({
 
 export const MessageContainer = ({
   conversation,
-  client,
   searchTerm,
   selectConversation,
 }) => {
   const isFirstLoad = useRef(true);
+  const {client} = useXmtp();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,20 +56,19 @@ export const MessageContainer = ({
     fetchMessages();
   }, [conversation]);
 
-  const startMessageStream = async () => {
-    let stream = await conversation.streamMessages();
-    for await (const message of stream) {
-      setMessages(prevMessages => {
-        return updateMessages(prevMessages, message);
-      });
-    }
-  };
-
   useEffect(() => {
-    if (conversation && conversation.peerAddress) {
-      startMessageStream();
-    }
-  }, [conversation]);
+    const startMessageStream = async () => {
+      if (client) {
+        conversation.streamMessages(message => {
+          console.log('Streamed message:', message);
+          setMessages(prevMessages => {
+            return updateMessages(prevMessages, message);
+          });
+        });
+      }
+    };
+    startMessageStream();
+  }, [client]);
 
   const handleSendMessage = async newMessage => {
     if (!newMessage.trim()) {

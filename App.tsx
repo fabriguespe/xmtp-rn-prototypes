@@ -3,11 +3,13 @@ import {SafeAreaView} from 'react-native';
 
 import {FloatingInbox} from './src/components/FloatingInbox-text/index.js';
 import {MessageContainer} from './src/components/FloatingInbox-text/MessageContainer';
-
+import {XmtpProvider} from '@xmtp/react-native-sdk';
 function App() {
   return (
     <SafeAreaView style={{flex: 1}}>
-      <FloatingInbox />
+      <XmtpProvider>
+        <FloatingInbox />
+      </XmtpProvider>
     </SafeAreaView>
   );
 }

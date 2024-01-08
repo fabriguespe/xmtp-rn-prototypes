@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {useXmtp} from '@xmtp/react-native-sdk';
 
-export const ListConversations = ({searchTerm, client, selectConversation}) => {
+export const ListConversations = ({searchTerm, selectConversation}) => {
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState([]);
+  const {client} = useXmtp();
 
   const styles = StyleSheet.create({
     conversationListItem: {
@@ -39,18 +41,15 @@ export const ListConversations = ({searchTerm, client, selectConversation}) => {
   });
 
   useEffect(() => {
-    let isMounted = true;
     let stream;
     const fetchAndStreamConversations = async () => {
       setLoading(true);
       const allConversations = await client.conversations.list();
-
       const sortedConversations = allConversations.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
-      if (isMounted) {
-        setConversations(sortedConversations);
-      }
+      setConversations(sortedConversations);
+
       setLoading(false);
       stream = await client.conversations.stream();
       for await (const conversation of stream) {
@@ -72,7 +71,6 @@ export const ListConversations = ({searchTerm, client, selectConversation}) => {
     fetchAndStreamConversations();
 
     return () => {
-      isMounted = false;
       if (stream) {
         stream.return();
       }

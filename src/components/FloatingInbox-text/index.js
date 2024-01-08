@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import {Client} from '@xmtp/react-native-sdk';
+import {Client, useXmtp} from '@xmtp/react-native-sdk';
 import {ethers} from 'ethers';
 import {ConversationContainer} from './ConversationContainer';
 import {View, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const styles = StyleSheet.create({
   uContainer: {
     position: 'absolute',
@@ -22,7 +24,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 5,
-    textDecoration: 'none',
     color: '#000',
     backgroundColor: 'transparent',
     borderWidth: 0,
@@ -67,7 +68,6 @@ const styles = StyleSheet.create({
   btnXmtp: {
     backgroundColor: '#f0f0f0',
     alignItems: 'center',
-    textDecoration: 'none',
     color: '#000',
     justifyContent: 'center',
     borderWidth: 1,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
 
 export function FloatingInbox({wallet, env, onLogout}) {
   const [isOnNetwork, setIsOnNetwork] = useState(false);
-  const [client, setClient] = useState();
+  const {client, setClient} = useXmtp();
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -216,7 +216,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
         setClient(xmtp);
         setIsOnNetwork(!!xmtp.address);
       } else {
-        const xmtp = await Client.createFromKeyBundle(keys, clientOptions.env);
+        const xmtp = await Client.createFromKeyBundle(keys, clientOptions);
         setClient(xmtp);
         setIsOnNetwork(!!xmtp.address);
       }
@@ -235,8 +235,8 @@ export function FloatingInbox({wallet, env, onLogout}) {
         env: env ? env : getEnv(),
       };
       console.log(signer);
-      const xmtp = await Client.create(signer, clientOptions.env);
-      console.log('pasa');
+      const xmtp = await Client.create(signer, clientOptions);
+      console.log('pasa', clientOptions, xmtp.address);
       setClient(xmtp);
       setIsOnNetwork(!!xmtp.address);
     } catch (error) {

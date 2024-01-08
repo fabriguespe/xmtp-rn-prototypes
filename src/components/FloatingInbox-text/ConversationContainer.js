@@ -3,6 +3,7 @@ import {ethers} from 'ethers';
 import {MessageContainer} from './MessageContainer';
 import {ListConversations} from './ListConversations';
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
+import {useXmtp} from '@xmtp/react-native-sdk';
 
 const styles = StyleSheet.create({
   conversations: {
@@ -66,18 +67,16 @@ const styles = StyleSheet.create({
   peerAddressInput: {
     width: '100%',
     padding: 10,
-    boxSizing: 'border-box',
-    border: 0,
     borderColor: '#ccc',
   },
 });
 
 export const ConversationContainer = ({
-  client,
   selectedConversation,
   setSelectedConversation,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const {client} = useXmtp();
   const [peerAddress, setPeerAddress] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -87,6 +86,7 @@ export const ConversationContainer = ({
   const [createNew, setCreateNew] = useState(false);
 
   const selectConversation = async conversation => {
+    console.log('selectConversation', conversation.peerAddress);
     setSelectedConversation(conversation);
   };
 
@@ -175,7 +175,6 @@ export const ConversationContainer = ({
           />
           {loadingResolve && searchTerm && <Text>Resolving address...</Text>}
           <ListConversations
-            client={client}
             searchTerm={searchTerm}
             selectConversation={setSelectedConversation}
             onConversationFound={state => {
@@ -197,7 +196,6 @@ export const ConversationContainer = ({
       )}
       {selectedConversation && (
         <MessageContainer
-          client={client}
           conversation={selectedConversation}
           searchTerm={searchTerm}
           selectConversation={selectConversation}

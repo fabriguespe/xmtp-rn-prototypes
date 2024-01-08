@@ -9,7 +9,7 @@ PODS:
     - ExpoModulesCore
   - EXFont (11.10.0):
     - ExpoModulesCore
-  - Expo (50.0.0-preview.7):
+  - Expo (50.0.0-preview.8):
     - ExpoModulesCore
   - ExpoFileSystem (16.0.2):
     - ExpoModulesCore
@@ -1150,7 +1150,7 @@ PODS:
     - GzipSwift
     - web3.swift
     - XMTPRust (= 0.3.7-beta0)
-  - XMTPReactNative (1.23.4):
+  - XMTPReactNative (1.23.5):
     - ExpoModulesCore
     - MessagePacker
     - secp256k1.swift
@@ -1391,7 +1391,7 @@ SPEC CHECKSUMS:
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   EXConstants: e77cccf9afb245a6fb2ea917fe5f45f0e1d8b841
   EXFont: 9ae7e8e2e4825cef04a45dca74512a3f711e2fe9
-  Expo: cd2dc043dd1cc3d9e8e4e035fb9a41b421e8f13f
+  Expo: 87664535771d38d078a93d5db36a3f82f06eb7f9
   ExpoFileSystem: fb4c94cc5ec5c50cb2663d2f6d503a1960b95a1d
   ExpoKeepAwake: ed71bfe0e6ecd38e337586ba6e1ba27a56eb373b
   ExpoModulesCore: 01c0abfa6cd9c41c4bd76d8a1a079e6b591db10f
@@ -1461,7 +1461,7 @@ SPEC CHECKSUMS:
   SwiftProtobuf: b02b5075dcf60c9f5f403000b3b0c202a11b6ae1
   web3.swift: 2263d1e12e121b2c42ffb63a5a7beb1acaf33959
   XMTP: aa137f3c8ac7b61ecfb3de0973f2dc2e672a9ec1
-  XMTPReactNative: 8a0a14a34e873f429efedc25746d867df55e1c38
+  XMTPReactNative: 0fd341e74671f86834bf6831f52c07ee4fc19dc6
   XMTPRust: 8848a2ba761b2c961d666632f2ad27d1082faa93
   Yoga: 4f53dc50008d626fa679c7a1cb4bed898f8c0bde
 
