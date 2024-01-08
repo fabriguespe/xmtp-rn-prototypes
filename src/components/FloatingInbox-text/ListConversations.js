@@ -1,11 +1,18 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 import {useXmtp} from '@xmtp/react-native-sdk';
 
 export const ListConversations = ({searchTerm, selectConversation}) => {
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState([]);
   const {client} = useXmtp();
+  const bottomOfList = useRef(null);
 
   const styles = StyleSheet.create({
     conversationListItem: {
@@ -18,12 +25,7 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
       backgroundColor: '#f0f0f0',
       padding: 10,
     },
-    conversationDetails: {
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      width: '75%',
-      marginLeft: 10,
-    },
+    conversationDetails: {},
     conversationName: {
       fontSize: 16,
       fontWeight: 'bold',
@@ -41,7 +43,9 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
   });
 
   useEffect(() => {
+    let isMounted = true;
     let stream;
+    let timer;
     const fetchAndStreamConversations = async () => {
       setLoading(true);
       const allConversations = await client.conversations.list();
@@ -51,11 +55,8 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
       setConversations(sortedConversations);
 
       setLoading(false);
-      stream = await client.conversations.stream();
-      for await (const conversation of stream) {
-        console.log(
-          `New conversation started with ${conversation.peerAddress}`,
-        );
+      client.conversations.stream(conversation => {
+        console.log('Streamed conv:', conversation);
         if (isMounted) {
           setConversations(prevConversations => {
             const newConversations = [...prevConversations, conversation];
@@ -64,18 +65,30 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
             );
           });
         }
-        break;
-      }
+      });
+
+      // Delay scrolling to the bottom to allow the layout to update
+      timer = setTimeout(() => {
+        if (isMounted && bottomOfList.current) {
+          bottomOfList.current.scrollToEnd({animated: false});
+        }
+      }, 0);
     };
 
     fetchAndStreamConversations();
 
     return () => {
-      if (stream) {
-        stream.return();
-      }
+      isMounted = false;
+      clearTimeout(timer);
+      if (stream) stream.return();
     };
   }, []);
+
+  useEffect(() => {
+    if (bottomOfList.current) {
+      bottomOfList.current.scrollToEnd({animated: true});
+    }
+  }, [conversations]);
 
   const filteredConversations = conversations.filter(
     conversation =>
@@ -93,7 +106,7 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
           onPress={() => {
             selectConversation(conversation);
           }}>
-          <View style={styles.conversationDetails}>
+          <ScrollView ref={bottomOfList} style={styles.conversationDetails}>
             <Text style={styles.conversationName}>
               {conversation.peerAddress.substring(0, 6) +
                 '...' +
@@ -101,8 +114,8 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
                   conversation.peerAddress.length - 4,
                 )}
             </Text>
-            <Text style={styles.messagePreview}>jeje</Text>
-          </View>
+            <Text style={styles.messagePreview}>...</Text>
+          </ScrollView>
           <Text style={styles.conversationTimestamp}>
             {getRelativeTimeLabel(conversation.createdAt)}
           </Text>

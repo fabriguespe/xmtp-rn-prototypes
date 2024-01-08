@@ -21,6 +21,8 @@ export const MessageContainer = ({
 }) => {
   const isFirstLoad = useRef(true);
   const {client} = useXmtp();
+  const bottomOfList = useRef(null);
+
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,6 +39,9 @@ export const MessageContainer = ({
   };
 
   useEffect(() => {
+    let stream;
+    let isMounted = true;
+    let timer;
     const fetchMessages = async () => {
       if (conversation && conversation.peerAddress && isFirstLoad.current) {
         setIsLoading(true);
@@ -51,24 +56,41 @@ export const MessageContainer = ({
         setIsLoading(false);
         isFirstLoad.current = false;
       }
+      // Delay scrolling to the bottom to allow the layout to update
+      timer = setTimeout(() => {
+        if (isMounted && bottomOfList.current) {
+          bottomOfList.current.scrollToEnd({animated: false});
+        }
+      }, 0);
     };
 
     fetchMessages();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+      if (stream) stream.return();
+    };
   }, [conversation]);
 
   useEffect(() => {
     const startMessageStream = async () => {
-      if (client) {
-        conversation.streamMessages(message => {
-          console.log('Streamed message:', message);
-          setMessages(prevMessages => {
-            return updateMessages(prevMessages, message);
-          });
+      conversation.streamMessages(message => {
+        console.log('Streamed message:', message);
+        setMessages(prevMessages => {
+          return updateMessages(prevMessages, message);
         });
-      }
+      });
     };
+
     startMessageStream();
-  }, [client]);
+  }, []);
+
+  useEffect(() => {
+    if (bottomOfList.current) {
+      bottomOfList.current.scrollToEnd({animated: true});
+    }
+  }, [messages]);
 
   const handleSendMessage = async newMessage => {
     if (!newMessage.trim()) {
@@ -90,7 +112,7 @@ export const MessageContainer = ({
         <Text>Loading messages...</Text>
       ) : (
         <View style={styles.container}>
-          <ScrollView style={styles.messagesContainer}>
+          <ScrollView style={styles.messagesContainer} ref={bottomOfList}>
             {messages.slice().map(message => {
               return (
                 <MessageItem
