@@ -203,11 +203,13 @@ export function FloatingInbox({wallet, env, onLogout}) {
         handleLogout();
         return;
       }
-      let address = await getAddress(signer);
-      let keys = await loadKeyBundle(address);
       const clientOptions = {
         env: env ? env : getEnv(),
       };
+
+      let address = await getAddress(signer);
+
+      let keys = await loadKeyBundle(address);
       if (!keys) {
         const xmtp = await Client.create(signer, clientOptions);
         setClient(xmtp);
