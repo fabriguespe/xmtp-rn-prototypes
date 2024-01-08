@@ -82,28 +82,6 @@ npm run ios
 
 ## Troubleshooting
 
-**Resolving the 'atob' Reference Error**
-
-- Using `@react-native-anywhere/polyfill-base64`
-
-1. **Install the Package:**
-
-   To add the necessary polyfill, install `@react-native-anywhere/polyfill-base64`:
-
-   ```bash
-   npm install @react-native-anywhere/polyfill-base64
-   ```
-
-2. **Import the Polyfill:**
-
-   In the entry point of your application, such as `index.js`, import the polyfill:
-
-   ```javascript
-   import '@react-native-anywhere/polyfill-base64';
-
-   // Now you can use btoa and atob in your application
-   ```
-
 **Resolving Buffer Issues with Ethers.js**
 
 Ethers.js relies on the Buffer class, which is a global object in Node.js but not available in the React Native environment. To resolve this, you need to polyfill Buffer.
