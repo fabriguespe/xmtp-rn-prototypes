@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {useXmtp} from '@xmtp/react-native-sdk';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ListConversations = ({searchTerm, selectConversation}) => {
   const [loading, setLoading] = useState(false);
@@ -44,7 +45,31 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
       textAlign: 'right',
     },
   });
+  useEffect(() => {
+    const getActiveTabFromStorage = async () => {
+      try {
+        const storedActiveTab = await AsyncStorage.getItem('@activeTab');
+        if (storedActiveTab !== null) {
+          setActiveTab(storedActiveTab);
+        }
+      } catch (e) {
+        // reading error
+        console.error('Failed to read the active tab from storage', e);
+      }
+    };
 
+    getActiveTabFromStorage();
+  }, []);
+
+  const setActiveTabWithStorage = async tab => {
+    setActiveTab(tab);
+    try {
+      await AsyncStorage.setItem('@activeTab', tab);
+    } catch (e) {
+      // saving error
+      console.error('Failed to save the active tab to storage', e);
+    }
+  };
   useEffect(() => {
     let isMounted = true;
     let stream;
@@ -124,13 +149,13 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
       {activeTab === 'requests' ? (
         <TouchableOpacity
           style={styles.conversationListItem}
-          onPress={() => setActiveTab('allowed')}>
+          onPress={() => setActiveTabWithStorage('allowed')}>
           <Text style={styles.conversationName}>← Allowed</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
           style={styles.conversationListItem}
-          onPress={() => setActiveTab('requests')}>
+          onPress={() => setActiveTabWithStorage('requests')}>
           <Text style={styles.conversationName}>Requests →</Text>
         </TouchableOpacity>
       )}
