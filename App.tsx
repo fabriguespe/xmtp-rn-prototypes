@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {SafeAreaView, Button} from 'react-native';
 import {FloatingInbox as Floating1} from './src/components/FloatingInbox-text/index.js';
 import {FloatingInbox as Floating2} from './src/components/FloatingInbox-consent/index.js';
+import {FloatingInbox as Floating3} from './src/components/FloatingInbox-groupchat/index.js';
 import {XmtpProvider} from '@xmtp/react-native-sdk';
 
 function App() {
@@ -21,14 +22,14 @@ function App() {
               onPress={() => setView('inbox2' as any)}
             />
             <Button
-              title="Inbox Consent"
+              title="Group Chat"
               onPress={() => setView('inbox3' as any)}
             />
           </>
         )}
         {view === 'inbox1' && <Floating1 />}
         {view === 'inbox2' && <Floating2 />}
-        {view === 'inbox3' && <FloatingInbox />}
+        {view === 'inbox3' && <Floating3 />}
       </XmtpProvider>
     </SafeAreaView>
   );

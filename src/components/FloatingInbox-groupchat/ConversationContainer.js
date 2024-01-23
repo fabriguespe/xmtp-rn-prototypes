@@ -86,12 +86,29 @@ export const ConversationContainer = ({
   const [createNew, setCreateNew] = useState(false);
 
   const openConversation = async conversation => {
-    console.log('selectConversation', conversation.peerAddress);
+    console.log('openConversation', conversation);
     setSelectedConversation(conversation);
   };
 
   const isValidEthereumAddress = address => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
+  };
+
+  const [groupChatAddresses, setGroupChatAddresses] = useState(
+    new Set([
+      '0x6FAf4f236cC0aBe5224F07dbC4de96829515fcc2',
+      '0xD6B02Af4E4A5Df6cA99D3b568f4A166540373809',
+    ]),
+  );
+
+  const addToGroupChat = () => {
+    if (peerAddress && canMessage) {
+      setGroupChatAddresses(
+        prevAddresses => new Set([...prevAddresses, peerAddress]),
+      );
+      console.log('groupChatAddresses', groupChatAddresses);
+      //setSearchTerm(''); // Clear the search box
+    }
   };
 
   const handleSearchChange = async e => {
@@ -116,11 +133,6 @@ export const ConversationContainer = ({
         setLoadingResolve(false);
       }
     }
-    console.log(
-      'resolvedAddress',
-      resolvedAddress,
-      isValidEthereumAddress(resolvedAddress),
-    );
     if (resolvedAddress && isValidEthereumAddress(resolvedAddress)) {
       processEthereumAddress(resolvedAddress);
       setSearchTerm(resolvedAddress); // <-- Add this line
@@ -139,7 +151,6 @@ export const ConversationContainer = ({
       setCreateNew(false);
       setCanMessage(false);
     } else {
-      console.log('address', address, await client?.canMessage(address));
       const canMessageStatus = await client?.canMessage(address);
       if (canMessageStatus) {
         setPeerAddress(address);
@@ -174,6 +185,9 @@ export const ConversationContainer = ({
             style={styles.peerAddressInput}
           />
           {loadingResolve && searchTerm && <Text>Resolving address...</Text>}
+          {searchTerm.length > 0 && message && conversationFound !== true && (
+            <Text style={{textAlign: 'center'}}>{message}</Text>
+          )}
           <ListConversations
             searchTerm={searchTerm}
             selectConversation={openConversation}
@@ -182,8 +196,7 @@ export const ConversationContainer = ({
               if (state === true) setCreateNew(false);
             }}
           />
-          {message && conversationFound !== true && <Text>{message}</Text>}
-          {peerAddress && canMessage && (
+          {searchTerm.length > 0 && peerAddress && canMessage && (
             <Button
               title="Create new conversation"
               style={styles.createNewButton}
@@ -192,6 +205,30 @@ export const ConversationContainer = ({
               }}
             />
           )}
+          {searchTerm.length > 0 && peerAddress && canMessage && (
+            <>
+              <Button
+                title="Add address to group chat"
+                style={styles.createNewButton}
+                onPress={addToGroupChat}
+              />
+              {Array.from(groupChatAddresses).map((address, index) => (
+                <Text key={index}>{address}</Text>
+              ))}
+              {searchTerm.length > 0 && groupChatAddresses.size >= 2 && (
+                <Button
+                  title="Create group chat"
+                  style={styles.createNewButton}
+                  onPress={() => {
+                    setSelectedConversation({
+                      groupChatAddresses: groupChatAddresses,
+                      isGroupChat: true,
+                    });
+                  }}
+                />
+              )}
+            </>
+          )}
         </View>
       )}
       {selectedConversation && (
@@ -199,6 +236,8 @@ export const ConversationContainer = ({
           conversation={selectedConversation}
           searchTerm={searchTerm}
           selectConversation={openConversation}
+          groupChatAddresses={groupChatAddresses}
+          setGroupChatAddresses={setGroupChatAddresses}
         />
       )}
     </>
