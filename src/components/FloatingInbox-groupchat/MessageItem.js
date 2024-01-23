@@ -20,6 +20,7 @@ export const MessageItem = ({message, senderAddress}) => {
   };
 
   const isSender = senderAddress === client?.address;
+  console.log(client?.address);
   return (
     <View
       style={isSender ? styles.senderMessage : styles.receiverMessage}

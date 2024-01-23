@@ -59,6 +59,7 @@ export const MessageContainer = ({
           initialMessages = await conversation?.messages();
         } catch (e) {}
 
+        console.log('fetch-initialMessages', initialMessages);
         let updatedMessages = [];
         initialMessages.forEach(message => {
           updatedMessages = updateMessages(updatedMessages, message);
@@ -66,11 +67,11 @@ export const MessageContainer = ({
 
         setMessages(updatedMessages);
         setIsLoading(false);
+        isFirstLoad.current = false;
       } else {
         setMessages([]);
         setIsLoading(false);
       }
-      isFirstLoad.current = false;
       // Delay scrolling to the bottom to allow the layout to update
       timer = setTimeout(() => {
         if (isMounted && bottomOfList.current) {
@@ -89,6 +90,7 @@ export const MessageContainer = ({
 
   useEffect(() => {
     const startMessageStream = async () => {
+      console.log('entra stream');
       conversation.streamMessages(message => {
         console.log('Streamed message:', message);
         setMessages(prevMessages => {
@@ -96,8 +98,8 @@ export const MessageContainer = ({
         });
       });
     };
-    startMessageStream();
-  }, []);
+    if (typeof conversation.streamMessages === 'function') startMessageStream();
+  }, [conversation]);
 
   useEffect(() => {
     if (bottomOfList.current) {
@@ -118,10 +120,10 @@ export const MessageContainer = ({
       } else {
         groupChat = new GroupChat(groupChatAddresses);
         selectConversation(groupChat);
-        setGroupChatAddresses(new Set()); // Clear the group chat addresses
+        //setGroupChatAddresses(new Set()); // Clear the group chat addresses
       }
 
-      groupChat.sendMessage(newMessage);
+      await groupChat.sendMessage(newMessage);
     } else if (conversation && conversation.peerAddress) {
       await conversation.send(newMessage);
     } else if (conversation) {
@@ -138,19 +140,16 @@ export const MessageContainer = ({
       ) : (
         <View style={styles.container}>
           <ScrollView style={styles.messagesContainer} ref={bottomOfList}>
-            {messages
-              .slice()
-              .reverse()
-              .map(message => {
-                return (
-                  <MessageItem
-                    key={message.id}
-                    message={message}
-                    senderAddress={message.senderAddress}
-                    client={client}
-                  />
-                );
-              })}
+            {messages.slice().map(message => {
+              return (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  senderAddress={message.senderAddress}
+                  client={client}
+                />
+              );
+            })}
           </ScrollView>
           <MessageInput
             onSendMessage={msg => {

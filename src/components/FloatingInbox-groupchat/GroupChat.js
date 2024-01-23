@@ -1,9 +1,11 @@
 import {EventEmitter} from 'fbemitter';
 
 class Message {
-  constructor(text) {
+  constructor(text, sender) {
     this.id = `msg-${Date.now()}`; // Unique ID for the group chat
     this.text = text;
+    this.senderAddress = sender; // New property for the sender of the message
+    this.sent = new Date();
   }
 
   content() {
@@ -21,18 +23,25 @@ export class GroupChat {
     this.id = `groupchat-${Date.now()}`; // Unique ID for the group chat
     this.participants = participants;
     this.msgArray = [];
+    this.createdAt = new Date();
     GroupChat.groupChats.push(this); // Add this group chat to the array
   }
 
   streamMessages(callback) {
-    console.log('runStream');
+    // Immediately call the callback for each existing message
+    this.msgArray.forEach(message => callback(message));
+
     this.eventEmitter.addListener('newMessage', callback);
   }
-  sendMessage(text) {
-    const message = new Message(text);
-    //this.msgArray.unshift(message);
-    this.eventEmitter.emit('newMessage', message); // Emit an event whenever a new message is sent
+  async sendMessage(text) {
+    console.log(this.participants);
+    const participantsArray = Array.from(this.participants);
+    const randomParticipant =
+      participantsArray[Math.floor(Math.random() * participantsArray.length)]; // Select a random participant
 
+    const message = new Message(text, randomParticipant);
+    this.msgArray.push(message);
+    this.eventEmitter.emit('newMessage', message); // Emit an event whenever a new message is sent
     return this.msgArray;
   }
 

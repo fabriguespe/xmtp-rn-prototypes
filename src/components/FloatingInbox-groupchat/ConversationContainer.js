@@ -98,6 +98,7 @@ export const ConversationContainer = ({
     new Set([
       '0x6FAf4f236cC0aBe5224F07dbC4de96829515fcc2',
       '0xD6B02Af4E4A5Df6cA99D3b568f4A166540373809',
+      '0x829510E9b6a3b6e8DCf906e846d3bFB6B9FB1D89',
     ]),
   );
 
