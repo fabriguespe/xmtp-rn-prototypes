@@ -227,6 +227,9 @@ export function FloatingInbox({wallet, env, onLogout}) {
       console.error('Error initializing XMTP with keys', error);
     }
   };
+  const resetSelectedConversation = () => {
+    setSelectedConversation(null);
+  };
 
   return (
     <View style={{flex: 1}}>
@@ -245,7 +248,12 @@ export function FloatingInbox({wallet, env, onLogout}) {
                 <Button
                   title="←"
                   onPress={() => {
-                    openConversation(null);
+                    console.log('setShowGroupChatInfo', showGroupChatInfo);
+                    if (showGroupChatInfo) {
+                      setShowGroupChatInfo(false);
+                    } else {
+                      openConversation(null);
+                    }
                   }}
                   style={styles.backButton}
                 />
@@ -298,7 +306,11 @@ export function FloatingInbox({wallet, env, onLogout}) {
               selectedConversation.isGroupChat &&
               typeof selectedConversation.listMembers === 'function' &&
               showGroupChatInfo ? (
-                <GroupChatInfo selectedConversation={selectedConversation} />
+                <GroupChatInfo
+                  selectedConversation={selectedConversation}
+                  resetSelectedConversation={resetSelectedConversation} // Add this line
+                  resetGroupChatInfo={() => setShowGroupChatInfo(false)} // Add this line
+                />
               ) : (
                 <ConversationContainer
                   client={client}

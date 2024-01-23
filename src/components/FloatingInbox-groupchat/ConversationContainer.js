@@ -237,6 +237,7 @@ export const ConversationContainer = ({
           selectConversation={openConversation}
           groupChatAddresses={groupChatAddresses}
           setGroupChatAddresses={setGroupChatAddresses}
+          resetSelectedConversation={() => setSelectedConversation(null)} // Add this line
         />
       )}
     </>

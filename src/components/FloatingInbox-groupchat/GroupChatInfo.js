@@ -32,7 +32,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export const GroupChatInfo = ({selectedConversation}) => {
+export const GroupChatInfo = ({
+  selectedConversation,
+  resetSelectedConversation,
+}) => {
   // Add a new state for the participant to be added
   const [newParticipant, setNewParticipant] = useState('');
   const {client, setClient} = useXmtp();
@@ -83,6 +86,7 @@ export const GroupChatInfo = ({selectedConversation}) => {
           onPress: () => {
             selectedConversation.removeMember(client.address);
             setMembers(Array.from(selectedConversation.listMembers()));
+            resetSelectedConversation(); // Add this line
           },
         },
       ],
