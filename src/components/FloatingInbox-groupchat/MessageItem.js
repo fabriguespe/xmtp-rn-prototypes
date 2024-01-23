@@ -20,12 +20,17 @@ export const MessageItem = ({message, senderAddress}) => {
   };
 
   const isSender = senderAddress === client?.address;
-  console.log(client?.address);
   return (
     <View
       style={isSender ? styles.senderMessage : styles.receiverMessage}
       key={message.id}>
-      <View style={styles.messageContent}>
+      <View
+        style={[
+          styles.messageContent,
+          isSender
+            ? styles.senderMessageContent
+            : styles.receiverMessageContent,
+        ]}>
         {renderMessage()}
         <View style={styles.footer}>
           <Text style={styles.timeStamp}>
@@ -49,7 +54,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   messageContent: {
-    backgroundColor: 'lightblue',
+    backgroundColor: 'lightgreen',
     padding: 10,
     margin: 5,
     borderRadius: 5,
@@ -58,5 +63,11 @@ const styles = StyleSheet.create({
   timeStamp: {
     fontSize: 8,
     color: 'grey',
+  },
+  senderMessageContent: {
+    backgroundColor: 'lightblue',
+  },
+  receiverMessageContent: {
+    backgroundColor: 'lightgreen',
   },
 });

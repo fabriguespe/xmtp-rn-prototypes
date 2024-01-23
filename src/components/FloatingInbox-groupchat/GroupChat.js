@@ -30,11 +30,9 @@ export class GroupChat {
   streamMessages(callback) {
     // Immediately call the callback for each existing message
     this.msgArray.forEach(message => callback(message));
-
     this.eventEmitter.addListener('newMessage', callback);
   }
   async sendMessage(text) {
-    console.log(this.participants);
     const participantsArray = Array.from(this.participants);
     const randomParticipant =
       participantsArray[Math.floor(Math.random() * participantsArray.length)]; // Select a random participant
@@ -63,7 +61,25 @@ export class GroupChat {
   static getAllGroupChats() {
     return GroupChat.groupChats;
   }
+  // Method to add a member
+  addMember(member) {
+    this.participants.add(member);
+  }
 
+  // Method to remove a member
+  removeMember(member) {
+    this.participants.delete(member);
+  }
+
+  // Method to list all members
+  listMembers() {
+    return this.participants;
+  }
+
+  // Method for a member to leave
+  leave(member) {
+    this.removeMember(member);
+  }
   static getGroupChatById(id) {
     return GroupChat.groupChats.find(chat => chat.id === id) || null;
   }

@@ -4,6 +4,7 @@ import {ethers} from 'ethers';
 import {ConversationContainer} from './ConversationContainer';
 import {View, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {GroupChatInfo} from './GroupChatInfo';
 
 import Config from 'react-native-config';
 const myPrivateKey = Config.MY_PRIVATE_KEY;
@@ -85,6 +86,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
   const [isOnNetwork, setIsOnNetwork] = useState(false);
   const {client, setClient} = useXmtp();
   const [isConnected, setIsConnected] = useState(false);
+  const [showGroupChatInfo, setShowGroupChatInfo] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -182,6 +184,10 @@ export function FloatingInbox({wallet, env, onLogout}) {
       onLogout();
     }
   };
+  const openConversation = async conversation => {
+    console.log('vuelve', conversation);
+    setSelectedConversation(conversation);
+  };
 
   const startFromPrivateKey = async () => {
     try {
@@ -239,12 +245,24 @@ export function FloatingInbox({wallet, env, onLogout}) {
                 <Button
                   title="←"
                   onPress={() => {
-                    setSelectedConversation(null);
+                    openConversation(null);
                   }}
                   style={styles.backButton}
                 />
               )}
               <Text style={styles.conversationHeaderH4}>Conversations</Text>
+              {isOnNetwork &&
+                selectedConversation &&
+                selectedConversation.isGroupChat &&
+                typeof selectedConversation.listMembers === 'function' && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowGroupChatInfo(!showGroupChatInfo);
+                    }}
+                    style={styles.cogIconContainer}>
+                    <Text style={styles.cogIcon}>⚙️</Text>
+                  </TouchableOpacity>
+                )}
             </View>
           </View>
         )}
@@ -273,12 +291,22 @@ export function FloatingInbox({wallet, env, onLogout}) {
               />
             </View>
           )}
+
           {isConnected && isOnNetwork && client && (
-            <ConversationContainer
-              client={client}
-              selectedConversation={selectedConversation}
-              setSelectedConversation={setSelectedConversation}
-            />
+            <>
+              {selectedConversation &&
+              selectedConversation.isGroupChat &&
+              typeof selectedConversation.listMembers === 'function' &&
+              showGroupChatInfo ? (
+                <GroupChatInfo selectedConversation={selectedConversation} />
+              ) : (
+                <ConversationContainer
+                  client={client}
+                  selectedConversation={selectedConversation}
+                  setSelectedConversation={openConversation}
+                />
+              )}
+            </>
           )}
         </View>
       </View>

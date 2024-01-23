@@ -47,7 +47,6 @@ export const MessageContainer = ({
     let isMounted = true;
     let timer;
     const fetchMessages = async () => {
-      console.log('entra');
       if (
         conversation &&
         (conversation.peerAddress || conversation.isGroupChat) &&
@@ -59,7 +58,6 @@ export const MessageContainer = ({
           initialMessages = await conversation?.messages();
         } catch (e) {}
 
-        console.log('fetch-initialMessages', initialMessages);
         let updatedMessages = [];
         initialMessages.forEach(message => {
           updatedMessages = updateMessages(updatedMessages, message);
@@ -90,7 +88,6 @@ export const MessageContainer = ({
 
   useEffect(() => {
     const startMessageStream = async () => {
-      console.log('entra stream');
       conversation.streamMessages(message => {
         console.log('Streamed message:', message);
         setMessages(prevMessages => {

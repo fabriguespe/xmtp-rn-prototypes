@@ -86,7 +86,6 @@ export const ConversationContainer = ({
   const [createNew, setCreateNew] = useState(false);
 
   const openConversation = async conversation => {
-    console.log('openConversation', conversation);
     setSelectedConversation(conversation);
   };
 
@@ -107,7 +106,6 @@ export const ConversationContainer = ({
       setGroupChatAddresses(
         prevAddresses => new Set([...prevAddresses, peerAddress]),
       );
-      console.log('groupChatAddresses', groupChatAddresses);
       //setSearchTerm(''); // Clear the search box
     }
   };
