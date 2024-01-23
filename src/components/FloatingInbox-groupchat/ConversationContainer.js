@@ -93,13 +93,7 @@ export const ConversationContainer = ({
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
 
-  const [groupChatAddresses, setGroupChatAddresses] = useState(
-    new Set([
-      '0x829510E9b6a3b6e8DCf906e846d3bFB6B9FB1D89',
-      '0x6FAf4f236cC0aBe5224F07dbC4de96829515fcc2',
-      '0xD6B02Af4E4A5Df6cA99D3b568f4A166540373809',
-    ]),
-  );
+  const [groupChatAddresses, setGroupChatAddresses] = useState(new Set());
 
   const addToGroupChat = () => {
     if (peerAddress && canMessage) {
@@ -206,6 +200,16 @@ export const ConversationContainer = ({
           )}
           {searchTerm.length > 0 && peerAddress && canMessage && (
             <>
+              <Button
+                title="Create test group chat"
+                style={styles.createNewButton}
+                onPress={() => {
+                  setSelectedConversation({
+                    groupChatAddresses: groupChatAddresses,
+                    isGroupChat: true,
+                  });
+                }}
+              />
               <Button
                 title="Add address to group chat"
                 style={styles.createNewButton}
