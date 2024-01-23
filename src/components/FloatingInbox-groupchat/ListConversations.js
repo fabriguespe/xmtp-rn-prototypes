@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {useXmtp} from '@xmtp/react-native-sdk';
+import {GroupChat} from './GroupChat';
 
 export const ListConversations = ({searchTerm, selectConversation}) => {
   const [loading, setLoading] = useState(false);
@@ -49,10 +50,16 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
     const fetchAndStreamConversations = async () => {
       setLoading(true);
       const allConversations = await client.conversations.list();
-      const sortedConversations = allConversations.sort(
+      const allGroupChats = GroupChat.getAllGroupChats(); // Get all group chats
+      console.log('All group chats:', allGroupChats);
+      /*const sortedConversations = allConversations.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );*/
+      //setConversations(sortedConversations);
+      const combined = [...allConversations, ...allGroupChats].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
-      setConversations(sortedConversations);
+      setConversations(combined);
 
       setLoading(false);
       client.conversations.stream(conversation => {
@@ -90,12 +97,14 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
     }
   }, [conversations]);
 
+  console.log(conversations.length);
   const filteredConversations = conversations.filter(
     conversation =>
-      conversation?.peerAddress
+      conversation.isGroupChat ||
+      (conversation?.peerAddress
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) &&
-      conversation?.peerAddress !== client.address,
+        conversation?.peerAddress !== client.address),
   );
   return (
     <View>
@@ -108,11 +117,13 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
           }}>
           <ScrollView ref={bottomOfList} style={styles.conversationDetails}>
             <Text style={styles.conversationName}>
-              {conversation.peerAddress.substring(0, 6) +
-                '...' +
-                conversation.peerAddress.substring(
-                  conversation.peerAddress.length - 4,
-                )}
+              {conversation.isGroupChat
+                ? `👨‍👩‍👧‍👦: ${conversation.id}` // Display group chat ID
+                : conversation.peerAddress.substring(0, 6) +
+                  '...' +
+                  conversation.peerAddress.substring(
+                    conversation.peerAddress.length - 4,
+                  )}
             </Text>
             <Text style={styles.messagePreview}>...</Text>
           </ScrollView>

@@ -22,6 +22,7 @@ export class GroupChat {
 
     this.id = `groupchat-${Date.now()}`; // Unique ID for the group chat
     this.participants = participants;
+    this.peerAddress = Array.from(participants)[0];
     this.msgArray = [];
     this.createdAt = new Date();
     GroupChat.groupChats.push(this); // Add this group chat to the array
