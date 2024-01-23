@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Alert} from 'react-native';
-import {View, Text, Button, TouchableOpacity} from 'react-native';
+import {View, Text, TextInput, Button, TouchableOpacity} from 'react-native';
 import {useXmtp} from '@xmtp/react-native-sdk';
 const styles = StyleSheet.create({
   title: {
@@ -17,6 +17,14 @@ const styles = StyleSheet.create({
   memberText: {
     textAlign: 'center',
   },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 10, // Add padding here
+    margin: 20,
+  },
   removeIcon: {
     marginLeft: 10,
     color: 'red',
@@ -25,6 +33,8 @@ const styles = StyleSheet.create({
 });
 
 export const GroupChatInfo = ({selectedConversation}) => {
+  // Add a new state for the participant to be added
+  const [newParticipant, setNewParticipant] = useState('');
   const {client, setClient} = useXmtp();
   const handleRemoveMember = participant => {
     Alert.alert(
@@ -35,7 +45,13 @@ export const GroupChatInfo = ({selectedConversation}) => {
           text: 'Cancel',
           style: 'cancel',
         },
-        {text: 'OK', onPress: () => removeMember(participant)},
+        {
+          text: 'OK',
+          onPress: () => {
+            selectedConversation.removeMember(participant);
+            setMembers(Array.from(selectedConversation.listMembers()));
+          },
+        },
       ],
     );
   };
@@ -54,13 +70,44 @@ export const GroupChatInfo = ({selectedConversation}) => {
   }, [selectedConversation]);
 
   const leaveGroupChat = () => {
-    selectedConversation.removeMember(client.address);
-    setMembers(Array.from(selectedConversation.listMembers()));
+    Alert.alert(
+      'Confirmation',
+      'Are you sure you want to leave the group chat?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            selectedConversation.removeMember(client.address);
+            setMembers(Array.from(selectedConversation.listMembers()));
+          },
+        },
+      ],
+    );
   };
 
-  const removeMember = participant => {
-    selectedConversation.removeMember(participant);
-    setMembers(Array.from(selectedConversation.listMembers()));
+  const addParticipant = () => {
+    Alert.alert(
+      'Confirmation',
+      `Are you sure you want to add ${newParticipant} to the group chat?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => {
+            selectedConversation.addMember(newParticipant);
+            setMembers(Array.from(selectedConversation.listMembers()));
+            setNewParticipant(''); // Clear the input
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -78,6 +125,14 @@ export const GroupChatInfo = ({selectedConversation}) => {
           </TouchableOpacity>
         </View>
       ))}
+      <TextInput
+        style={styles.input}
+        onChangeText={setNewParticipant}
+        value={newParticipant}
+        placeholder="Add a participant"
+      />
+      <Button title="Add Participant" onPress={addParticipant} />
+
       <Button title="Leave" onPress={leaveGroupChat} />
     </View>
   );
