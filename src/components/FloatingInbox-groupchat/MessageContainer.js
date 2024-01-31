@@ -18,9 +18,7 @@ const styles = StyleSheet.create({
 
 export const MessageContainer = ({
   conversation,
-  searchTerm,
   selectConversation,
-  setGroupChatAddresses,
   groupChatAddresses,
 }) => {
   const isFirstLoad = useRef(true);
@@ -124,7 +122,7 @@ export const MessageContainer = ({
     } else if (conversation && conversation.peerAddress) {
       await conversation.send(newMessage);
     } else if (conversation) {
-      const conv = await client.conversations.newConversation(searchTerm);
+      const conv = await client.conversations.newConversation(conversation);
       selectConversation(conv);
       await conv.send(newMessage);
     }

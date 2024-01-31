@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {ethers} from 'ethers';
 import {MessageContainer} from './MessageContainer';
 import {ListConversations} from './ListConversations';
@@ -8,6 +8,14 @@ import {useXmtp} from '@xmtp/react-native-sdk';
 const styles = StyleSheet.create({
   conversations: {
     height: '100%',
+  }, // Your existing styles
+  addressListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  addressText: {
+    marginLeft: 10,
   },
   conversationList: {
     padding: 0,
@@ -42,14 +50,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   messagePreview: {
-    fontSize: 14,
+    fontSize: 8,
     color: '#666',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   conversationTimestamp: {
-    fontSize: 12,
+    fontSize: 8,
     color: '#999',
     width: '25%',
     textAlign: 'right',
@@ -63,6 +71,10 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
     marginTop: 10,
+    fontSize: 8,
+    height: 10,
+    minWidth: 10, // Adjust the width as needed
+    minHeight: 10, // Adjust the height as needed
   },
   peerAddressInput: {
     width: '100%',
@@ -93,17 +105,6 @@ export const ConversationContainer = ({
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
 
-  const [groupChatAddresses, setGroupChatAddresses] = useState(new Set());
-
-  const addToGroupChat = () => {
-    if (peerAddress && canMessage) {
-      setGroupChatAddresses(
-        prevAddresses => new Set([...prevAddresses, peerAddress]),
-      );
-      //setSearchTerm(''); // Clear the search box
-    }
-  };
-
   const handleSearchChange = async e => {
     setCreateNew(false);
     setConversationFound(false);
@@ -128,13 +129,14 @@ export const ConversationContainer = ({
     }
     if (resolvedAddress && isValidEthereumAddress(resolvedAddress)) {
       processEthereumAddress(resolvedAddress);
-      setSearchTerm(resolvedAddress); // <-- Add this line
+      setSearchTerm(resolvedAddress);
     } else {
       setMessage('Invalid Ethereum address');
       setPeerAddress(null);
       setCreateNew(false);
       //setCanMessage(false);
     }
+    setFoundAddresses(prev => prev.filter(item => item.isSelected));
   };
 
   const processEthereumAddress = async address => {
@@ -148,8 +150,9 @@ export const ConversationContainer = ({
       if (canMessageStatus) {
         setPeerAddress(address);
         setCanMessage(true);
-        setMessage('Address is on the network ✅');
+        setMessage(null);
         setCreateNew(true);
+        addFoundAddress(address);
       } else {
         setCanMessage(false);
         setMessage('Address is not on the network ❌');
@@ -165,6 +168,77 @@ export const ConversationContainer = ({
       </View>
     );
   }
+
+  const [groupChatAddresses, setGroupChatAddresses] = useState(new Set());
+  const [foundAddresses, setFoundAddresses] = useState([]);
+
+  const createGroupChat = () => {
+    const selectedAddresses = foundAddresses
+      .filter(item => item.isSelected)
+      .map(item => item.address);
+
+    if (selectedAddresses.length > 0) {
+      setSelectedConversation({
+        groupChatAddresses: new Set(selectedAddresses),
+        isGroupChat: true,
+      });
+      clearSearch();
+    } else {
+      // Handle the case where no addresses are selected (optional)
+      console.log('No addresses selected for the group chat.');
+    }
+  };
+  const clearSearch = () => {
+    setFoundAddresses([]);
+    setSearchTerm('');
+  };
+  // Function to handle adding a new found address
+  const addFoundAddress = address => {
+    console.log('addFoundAddress', address);
+    setFoundAddresses(prev => {
+      // Check if the address is already in the list to avoid duplicates
+      const isAddressAlreadyAdded = prev.some(item => item.address === address);
+      if (!isAddressAlreadyAdded) {
+        return [...prev, {address, isSelected: false}];
+      }
+      return prev;
+    });
+  };
+
+  // Function to toggle the selection state of an address
+  const toggleAddressSelection = index => {
+    setFoundAddresses(prev =>
+      prev.map((item, idx) =>
+        idx === index ? {...item, isSelected: !item.isSelected} : item,
+      ),
+    );
+  };
+
+  const toggleAddressButton = (isSelected, toggleFunction) => (
+    <Button
+      title={isSelected ? '✅' : '﹢'}
+      onPress={toggleFunction}
+      color={isSelected ? 'green' : 'blue'}
+    />
+  );
+
+  const createConversation = () => {
+    const selectedAddress = foundAddresses.find(item => item.isSelected);
+    if (selectedAddress) {
+      setSelectedConversation(selectedAddress.address);
+      clearSearch();
+    }
+  };
+
+  useEffect(() => {
+    console.log(
+      'Selected conversation changed:',
+      foundAddresses.length,
+      selectedConversation,
+    );
+    // Additional logic to handle the change can be added here
+  }, [selectedConversation, foundAddresses]); // Dependency array includes conversation, so this runs every time conversation changes
+
   return (
     <>
       {!selectedConversation && (
@@ -178,6 +252,18 @@ export const ConversationContainer = ({
             style={styles.peerAddressInput}
           />
           {loadingResolve && searchTerm && <Text>Resolving address...</Text>}
+          {foundAddresses.map((item, index) => (
+            <View key={index} style={styles.addressListItem}>
+              {toggleAddressButton(item.isSelected, () =>
+                toggleAddressSelection(index),
+              )}
+              <Text style={styles.addressText}>
+                {item.address.substring(0, 6) +
+                  '...' +
+                  item.address.substring(item.address.length - 4)}
+              </Text>
+            </View>
+          ))}
           {searchTerm.length > 0 && message && conversationFound !== true && (
             <Text style={{textAlign: 'center'}}>{message}</Text>
           )}
@@ -189,59 +275,28 @@ export const ConversationContainer = ({
               if (state === true) setCreateNew(false);
             }}
           />
-          {searchTerm.length > 0 && peerAddress && canMessage && (
+          {foundAddresses.filter(item => item.isSelected).length === 1 && (
             <Button
               title="Create new conversation"
               style={styles.createNewButton}
-              onPress={() => {
-                setSelectedConversation({messages: []});
-              }}
+              onPress={createConversation}
             />
           )}
-          {searchTerm.length > 0 && peerAddress && canMessage && (
-            <>
-              <Button
-                title="Create test group chat"
-                style={styles.createNewButton}
-                onPress={() => {
-                  setSelectedConversation({
-                    groupChatAddresses: groupChatAddresses,
-                    isGroupChat: true,
-                  });
-                }}
-              />
-              <Button
-                title="Add address to group chat"
-                style={styles.createNewButton}
-                onPress={addToGroupChat}
-              />
-              {Array.from(groupChatAddresses).map((address, index) => (
-                <Text key={index}>{address}</Text>
-              ))}
-              {searchTerm.length > 0 && groupChatAddresses.size >= 2 && (
-                <Button
-                  title="Create group chat"
-                  style={styles.createNewButton}
-                  onPress={() => {
-                    setSelectedConversation({
-                      groupChatAddresses: groupChatAddresses,
-                      isGroupChat: true,
-                    });
-                  }}
-                />
-              )}
-            </>
+          {foundAddresses.filter(item => item.isSelected).length > 1 && (
+            <Button
+              title="Create group chat 👨‍👩‍👧‍👧"
+              style={styles.createNewButton}
+              onPress={createGroupChat}
+            />
           )}
         </View>
       )}
+
       {selectedConversation && (
         <MessageContainer
           conversation={selectedConversation}
-          searchTerm={searchTerm}
           selectConversation={openConversation}
           groupChatAddresses={groupChatAddresses}
-          setGroupChatAddresses={setGroupChatAddresses}
-          resetSelectedConversation={() => setSelectedConversation(null)} // Add this line
         />
       )}
     </>
