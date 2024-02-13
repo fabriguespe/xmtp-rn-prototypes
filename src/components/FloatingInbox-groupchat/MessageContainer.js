@@ -107,14 +107,22 @@ export const MessageContainer = ({
       Alert.alert('Empty message');
       return;
     }
+    console.log();
     if (conversation.isGroupChat) {
       let groupChat;
       // Check if the group chat already exists
       if (conversation instanceof GroupChat) {
         groupChat = conversation;
       } else {
-        groupChat = new GroupChat(groupChatAddresses);
+        //groupChat = new GroupChat(groupChatAddresses);
+        console.log('groupChatAddresses', [
+          '0x0AD3A479B31072bc14bDE6AaD601e4cbF13e78a8',
+          '0x7E0b0363404751346930AF92C80D1fef932Cc48a',
+        ]);
+        groupChat = await client.conversations.newGroup(groupChatAddresses);
         selectConversation(groupChat);
+        const groups = await client.conversations.listGroups();
+        console.log('groups', groups);
         //setGroupChatAddresses(new Set()); // Clear the group chat addresses
       }
 

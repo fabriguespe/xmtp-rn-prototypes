@@ -9,6 +9,7 @@ import {GroupChatInfo} from './GroupChatInfo';
 import Config from 'react-native-config';
 const myPrivateKey = Config.MY_PRIVATE_KEY;
 const infuraKey = Config.INFURA_KEY;
+console.log('Group', Config);
 
 const styles = StyleSheet.create({
   uContainer: {
@@ -262,7 +263,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
               {isOnNetwork &&
                 selectedConversation &&
                 selectedConversation.isGroupChat &&
-                typeof selectedConversation.listMembers === 'function' && (
+                typeof selectedConversation.memberAddresses === 'function' && (
                   <TouchableOpacity
                     onPress={() => {
                       setShowGroupChatInfo(!showGroupChatInfo);
@@ -304,7 +305,7 @@ export function FloatingInbox({wallet, env, onLogout}) {
             <>
               {selectedConversation &&
               selectedConversation.isGroupChat &&
-              typeof selectedConversation.listMembers === 'function' &&
+              typeof selectedConversation.memberAddresses === 'function' &&
               showGroupChatInfo ? (
                 <GroupChatInfo
                   selectedConversation={selectedConversation}

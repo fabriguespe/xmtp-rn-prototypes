@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
   addressListItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 0,
   },
   addressText: {
     marginLeft: 10,
@@ -71,10 +71,8 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
     marginTop: 10,
-    fontSize: 8,
+    fontSize: 10,
     height: 10,
-    minWidth: 10, // Adjust the width as needed
-    minHeight: 10, // Adjust the height as needed
   },
   peerAddressInput: {
     width: '100%',
@@ -170,7 +168,10 @@ export const ConversationContainer = ({
   }
 
   const [groupChatAddresses, setGroupChatAddresses] = useState(new Set());
-  const [foundAddresses, setFoundAddresses] = useState([]);
+  const [foundAddresses, setFoundAddresses] = useState([
+    {address: '0x1234567890abcdef1234567890abcdef12345678', isSelected: true},
+    {address: '0xfedcba0987654321fedcba0987654321fedcba09', isSelected: true},
+  ]);
 
   const createGroupChat = () => {
     const selectedAddresses = foundAddresses
@@ -178,6 +179,7 @@ export const ConversationContainer = ({
       .map(item => item.address);
 
     if (selectedAddresses.length > 0) {
+      setGroupChatAddresses(new Set(selectedAddresses));
       setSelectedConversation({
         groupChatAddresses: new Set(selectedAddresses),
         isGroupChat: true,
@@ -194,7 +196,6 @@ export const ConversationContainer = ({
   };
   // Function to handle adding a new found address
   const addFoundAddress = address => {
-    console.log('addFoundAddress', address);
     setFoundAddresses(prev => {
       // Check if the address is already in the list to avoid duplicates
       const isAddressAlreadyAdded = prev.some(item => item.address === address);
@@ -230,15 +231,6 @@ export const ConversationContainer = ({
     }
   };
 
-  useEffect(() => {
-    console.log(
-      'Selected conversation changed:',
-      foundAddresses.length,
-      selectedConversation,
-    );
-    // Additional logic to handle the change can be added here
-  }, [selectedConversation, foundAddresses]); // Dependency array includes conversation, so this runs every time conversation changes
-
   return (
     <>
       {!selectedConversation && (
@@ -252,6 +244,19 @@ export const ConversationContainer = ({
             style={styles.peerAddressInput}
           />
           {loadingResolve && searchTerm && <Text>Resolving address...</Text>}
+
+          {searchTerm.length > 0 && message && conversationFound !== true && (
+            <Text style={{textAlign: 'center'}}>{message}</Text>
+          )}
+          <ListConversations
+            searchTerm={searchTerm}
+            selectConversation={openConversation}
+            onConversationFound={state => {
+              setConversationFound(state);
+              console.log('setConversationFound', state);
+              if (state === true) setCreateNew(false);
+            }}
+          />
           {foundAddresses.map((item, index) => (
             <View key={index} style={styles.addressListItem}>
               {toggleAddressButton(item.isSelected, () =>
@@ -264,24 +269,14 @@ export const ConversationContainer = ({
               </Text>
             </View>
           ))}
-          {searchTerm.length > 0 && message && conversationFound !== true && (
-            <Text style={{textAlign: 'center'}}>{message}</Text>
-          )}
-          <ListConversations
-            searchTerm={searchTerm}
-            selectConversation={openConversation}
-            onConversationFound={state => {
-              setConversationFound(state);
-              if (state === true) setCreateNew(false);
-            }}
-          />
-          {foundAddresses.filter(item => item.isSelected).length === 1 && (
-            <Button
-              title="Create new conversation"
-              style={styles.createNewButton}
-              onPress={createConversation}
-            />
-          )}
+          {conversationFound !== true &&
+            foundAddresses.filter(item => item.isSelected).length === 1 && (
+              <Button
+                title="Create new conversation"
+                style={styles.createNewButton}
+                onPress={createConversation}
+              />
+            )}
           {foundAddresses.filter(item => item.isSelected).length > 1 && (
             <Button
               title="Create group chat 👨‍👩‍👧‍👧"

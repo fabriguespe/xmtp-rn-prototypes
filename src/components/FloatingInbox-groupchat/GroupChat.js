@@ -20,7 +20,7 @@ export class GroupChat {
   constructor(participants) {
     this.eventEmitter = new EventEmitter();
 
-    this.id = `groupchat-${Date.now()}`; // Unique ID for the group chat
+    this.id = `group-${Date.now()}`; // Unique ID for the group chat
     this.participants = participants;
     this.peerAddress = Array.from(participants)[0];
     this.msgArray = [];
@@ -62,18 +62,17 @@ export class GroupChat {
   static getAllGroupChats() {
     return GroupChat.groupChats;
   }
-  // Method to add a member
-  addMember(member) {
-    this.participants.add(member);
+  // Method to add members
+  addMembers(members) {
+    members.forEach(member => this.participants.add(member));
   }
-
-  // Method to remove a member
-  removeMember(member) {
-    this.participants.delete(member);
+  // Method to remove members
+  removeMembers(members) {
+    members.forEach(member => this.participants.delete(member));
   }
 
   // Method to list all members
-  listMembers() {
+  memberAddresses() {
     return this.participants;
   }
 

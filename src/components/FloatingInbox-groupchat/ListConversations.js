@@ -9,7 +9,11 @@ import {
 import {useXmtp} from '@xmtp/react-native-sdk';
 import {GroupChat} from './GroupChat';
 
-export const ListConversations = ({searchTerm, selectConversation}) => {
+export const ListConversations = ({
+  searchTerm,
+  selectConversation,
+  onConversationFound,
+}) => {
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState([]);
   const {client} = useXmtp();
@@ -97,7 +101,6 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
     }
   }, [conversations]);
 
-  console.log(conversations.length);
   const filteredConversations = conversations.filter(
     conversation =>
       conversation.isGroupChat ||
@@ -106,6 +109,13 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
         .includes(searchTerm.toLowerCase()) &&
         conversation?.peerAddress !== client.address),
   );
+
+  useEffect(() => {
+    if (filteredConversations.length > 0) {
+      onConversationFound(true);
+    }
+  }, [filteredConversations, onConversationFound]);
+
   return (
     <View>
       {filteredConversations.map((conversation, index) => (
@@ -118,7 +128,7 @@ export const ListConversations = ({searchTerm, selectConversation}) => {
           <ScrollView ref={bottomOfList} style={styles.conversationDetails}>
             <Text style={styles.conversationName}>
               {conversation.isGroupChat
-                ? `👨‍👩‍👧‍👦: ${conversation.id}` // Display group chat ID
+                ? ` ${conversation.id}` // Display group chat ID
                 : conversation.peerAddress.substring(0, 6) +
                   '...' +
                   conversation.peerAddress.substring(

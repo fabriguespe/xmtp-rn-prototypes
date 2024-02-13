@@ -52,21 +52,21 @@ export const GroupChatInfo = ({
           text: 'OK',
           onPress: () => {
             selectedConversation.removeMember(participant);
-            setMembers(Array.from(selectedConversation.listMembers()));
+            setMembers(Array.from(selectedConversation.memberAddresses()));
           },
         },
       ],
     );
   };
   const [members, setMembers] = useState(
-    Array.from(selectedConversation.listMembers()).filter(
+    Array.from(selectedConversation.memberAddresses()).filter(
       member => member !== client.address,
     ),
   );
 
   useEffect(() => {
     setMembers(
-      Array.from(selectedConversation.listMembers()).filter(
+      Array.from(selectedConversation.memberAddresses()).filter(
         member => member !== client.address,
       ),
     );
@@ -85,7 +85,7 @@ export const GroupChatInfo = ({
           text: 'OK',
           onPress: () => {
             selectedConversation.removeMember(client.address);
-            setMembers(Array.from(selectedConversation.listMembers()));
+            setMembers(Array.from(selectedConversation.memberAddresses()));
             resetSelectedConversation(); // Add this line
           },
         },
@@ -105,8 +105,8 @@ export const GroupChatInfo = ({
         {
           text: 'OK',
           onPress: () => {
-            selectedConversation.addMember(newParticipant);
-            setMembers(Array.from(selectedConversation.listMembers()));
+            selectedConversation.addMembers(newParticipant);
+            setMembers(Array.from(selectedConversation.memberAddresses()));
             setNewParticipant(''); // Clear the input
           },
         },
@@ -119,7 +119,7 @@ export const GroupChatInfo = ({
       <Text style={styles.title}>Group Chat Info</Text>
 
       <Text style={{textAlign: 'center'}}>Members:</Text>
-      {Array.from(selectedConversation.listMembers()).map(participant => (
+      {Array.from(selectedConversation.memberAddresses()).map(participant => (
         <View key={participant} style={styles.memberContainer}>
           <Text style={styles.memberText}>{participant}</Text>
           <TouchableOpacity
